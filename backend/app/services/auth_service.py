@@ -1,6 +1,6 @@
 from app.database.mongodb import db
 from app.auth.security import hash_password
-from app.models.company import create_company
+from app.services.company_service import create_company
 from app.models.user import create_user
 from app.schemas.auth_schema import CompanyRegisterSchema
 

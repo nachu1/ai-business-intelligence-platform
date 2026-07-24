@@ -1,13 +1,15 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
-from datetime import datetime
 
 
-class Company(BaseModel):
+class CompanyCreate(BaseModel):
     name: str
     industry: str
     email: EmailStr
     phone: str
     country: str
     address: Optional[str] = None
-    created_at: datetime = datetime.utcnow()
+
+
+class CompanyResponse(CompanyCreate):
+    id: str

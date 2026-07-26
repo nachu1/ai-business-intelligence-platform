@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 
 from app.auth.authorization import require_roles
 from app.auth.security import get_current_user
@@ -8,6 +8,7 @@ from app.services.user_service import (
     get_user,
     get_company_users,
     update_user,
+    delete_user,
 )
 
 router = APIRouter(
@@ -39,11 +40,21 @@ async def current_user(
 
 @router.get("/", response_model=list[UserResponse])
 async def list_company_users(
+    search: str | None = Query(default=None),
+    role: str | None = Query(default=None),
+    department: str | None = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=10, ge=1),
     current_user=Depends(require_roles(["admin", "manager"]))
 ):
     return await get_company_users(
-        str(current_user["company_id"])
-    )
+    company_id=str(current_user["company_id"]),
+    search=search,
+    role=role,
+    department=department,
+    page=page,
+    limit=limit,
+)
 
 
 @router.put("/{user_id}", response_model=UserResponse)
@@ -61,6 +72,23 @@ async def edit_user(
         )
 
     return updated_user
+
+@router.delete("/{user_id}")
+async def remove_user(
+    user_id: str,
+    current_user=Depends(require_roles(["admin"]))
+):
+    deleted = await delete_user(user_id)
+
+    if not deleted:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    return {
+        "message": "User deleted successfully"
+    }
 
 
 @router.get("/{user_id}", response_model=UserResponse)

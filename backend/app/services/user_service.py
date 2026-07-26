@@ -53,14 +53,44 @@ async def get_user_by_email(email: str):
     return await user_collection.find_one(
         {"email": email}
     )
-async def get_company_users(company_id: str):
+
+
+async def get_company_users(
+    company_id: str,
+    search: str = None,
+    role: str = None,
+    department: str = None,
+    page: int = 1,
+    limit: int = 10,
+):
+    
+    query = {
+        "company_id": ObjectId(company_id)
+    }
+
+    if search:
+        query["name"] = {
+            "$regex": search,
+            "$options": "i"
+        }
+
+    if role:
+        query["role"] = role
+
+    if department:
+        query["department"] = department
+
     users = []
 
-    async for user in user_collection.find(
-        {
-            "company_id": ObjectId(company_id)
-        }
-    ):
+    skip = (page - 1) * limit
+
+    cursor = (
+       user_collection.find(query)
+       .skip(skip)
+       .limit(limit)
+)
+
+    async for user in cursor:
         user["id"] = str(user["_id"])
         user["company_id"] = str(user["company_id"])
 
@@ -70,6 +100,7 @@ async def get_company_users(company_id: str):
         users.append(user)
 
     return users
+
 async def update_user(user_id: str, user: UserUpdate):
     await user_collection.update_one(
         {"_id": ObjectId(user_id)},
@@ -86,3 +117,9 @@ async def update_user(user_id: str, user: UserUpdate):
     )
 
     return await get_user(user_id)
+async def delete_user(user_id: str):
+    result = await user_collection.delete_one(
+        {"_id": ObjectId(user_id)}
+    )
+
+    return result.deleted_count > 0

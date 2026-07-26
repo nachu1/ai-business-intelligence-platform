@@ -1,5 +1,7 @@
-from pydantic import BaseModel, EmailStr
+from datetime import datetime
 from typing import Literal
+
+from pydantic import BaseModel, EmailStr
 
 
 class UserCreate(BaseModel):
@@ -9,6 +11,9 @@ class UserCreate(BaseModel):
     password: str
     role: Literal["admin", "manager", "employee"]
 
+    department: str
+    designation: str
+
 
 class UserResponse(BaseModel):
     id: str
@@ -16,4 +21,9 @@ class UserResponse(BaseModel):
     name: str
     email: EmailStr
     role: Literal["admin", "manager", "employee"]
+
+    department: str
+    designation: str
+
     is_active: bool
+    created_at: datetime

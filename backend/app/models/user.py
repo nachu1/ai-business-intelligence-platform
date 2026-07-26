@@ -7,6 +7,8 @@ def create_user(
     email: str,
     password_hash: str,
     role: str,
+    department: str,
+    designation: str,
 ):
     return {
         "company_id": company_id,
@@ -14,6 +16,8 @@ def create_user(
         "email": email,
         "password_hash": password_hash,
         "role": role,
+        "department": department,
+        "designation": designation,
         "is_active": True,
         "created_at": datetime.utcnow(),
         "updated_at": datetime.utcnow(),

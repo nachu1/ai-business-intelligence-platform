@@ -1,8 +1,7 @@
-from datetime import datetime
-from app.auth.passwords import hash_password
 from bson import ObjectId
 from bson.errors import InvalidId
 
+from app.auth.passwords import hash_password
 from app.database.mongodb import user_collection
 from app.models.user import create_user
 from app.schemas.user_schema import UserCreate
@@ -13,14 +12,17 @@ async def create_new_user(user: UserCreate):
         company_id=ObjectId(user.company_id),
         name=user.name,
         email=user.email,
-        password_hash=hash_password(user.password), 
+        password_hash=hash_password(user.password),
         role=user.role,
+        department=user.department,
+        designation=user.designation,
     )
 
     result = await user_collection.insert_one(user_data)
 
     user_data["id"] = str(result.inserted_id)
     user_data["company_id"] = str(user_data["company_id"])
+
     del user_data["password_hash"]
 
     return user_data
@@ -47,4 +49,6 @@ async def get_user(user_id: str):
 
 
 async def get_user_by_email(email: str):
-    return await user_collection.find_one({"email": email})
+    return await user_collection.find_one(
+        {"email": email}
+    )

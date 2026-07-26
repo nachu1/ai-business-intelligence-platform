@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from fastapi import Depends
 from app.auth.security import get_current_user
-from app.auth.authorization import require_role
+from app.auth.authorization import require_roles
 from app.schemas.user_schema import UserCreate, UserResponse
 from app.services.user_service import create_new_user, get_user
 
@@ -14,7 +14,7 @@ router = APIRouter(
 @router.post("/", response_model=UserResponse)
 async def add_user(
     user: UserCreate,
-    current_user=Depends(require_role("admin"))
+    current_user=Depends(require_roles(["admin"]))
 ):
     return await create_new_user(user)
 

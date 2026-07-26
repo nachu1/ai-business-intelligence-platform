@@ -52,3 +52,20 @@ async def get_user_by_email(email: str):
     return await user_collection.find_one(
         {"email": email}
     )
+async def get_company_users(company_id: str):
+    users = []
+
+    async for user in user_collection.find(
+        {
+            "company_id": ObjectId(company_id)
+        }
+    ):
+        user["id"] = str(user["_id"])
+        user["company_id"] = str(user["company_id"])
+
+        del user["_id"]
+        del user["password_hash"]
+
+        users.append(user)
+
+    return users

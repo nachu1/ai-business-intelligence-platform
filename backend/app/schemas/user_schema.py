@@ -15,6 +15,15 @@ class UserCreate(BaseModel):
     designation: str
 
 
+
+class UserUpdate(BaseModel):
+    name: str
+    role: Literal["admin", "manager", "employee"]
+    department: str
+    designation: str
+    is_active: bool
+
+
 class UserResponse(BaseModel):
     id: str
     company_id: str

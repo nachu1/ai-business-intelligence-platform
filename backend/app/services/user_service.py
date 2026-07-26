@@ -5,7 +5,8 @@ from app.auth.passwords import hash_password
 from app.database.mongodb import user_collection
 from app.models.user import create_user
 from app.schemas.user_schema import UserCreate
-
+from app.schemas.user_schema import UserUpdate
+from datetime import datetime
 
 async def create_new_user(user: UserCreate):
     user_data = create_user(
@@ -69,3 +70,19 @@ async def get_company_users(company_id: str):
         users.append(user)
 
     return users
+async def update_user(user_id: str, user: UserUpdate):
+    await user_collection.update_one(
+        {"_id": ObjectId(user_id)},
+        {
+            "$set": {
+                "name": user.name,
+                "role": user.role,
+                "department": user.department,
+                "designation": user.designation,
+                "is_active": user.is_active,
+                "updated_at": datetime.utcnow(),
+            }
+        },
+    )
+
+    return await get_user(user_id)

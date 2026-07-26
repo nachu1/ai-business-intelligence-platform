@@ -2,11 +2,12 @@ from fastapi import APIRouter, HTTPException, Depends
 
 from app.auth.authorization import require_roles
 from app.auth.security import get_current_user
-from app.schemas.user_schema import UserCreate, UserResponse
+from app.schemas.user_schema import UserCreate, UserUpdate, UserResponse
 from app.services.user_service import (
     create_new_user,
     get_user,
     get_company_users,
+    update_user,
 )
 
 router = APIRouter(
@@ -38,13 +39,28 @@ async def current_user(
 
 @router.get("/", response_model=list[UserResponse])
 async def list_company_users(
-    current_user=Depends(
-        require_roles(["admin", "manager"])
-    )
+    current_user=Depends(require_roles(["admin", "manager"]))
 ):
     return await get_company_users(
         str(current_user["company_id"])
     )
+
+
+@router.put("/{user_id}", response_model=UserResponse)
+async def edit_user(
+    user_id: str,
+    user: UserUpdate,
+    current_user=Depends(require_roles(["admin"]))
+):
+    updated_user = await update_user(user_id, user)
+
+    if not updated_user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    return updated_user
 
 
 @router.get("/{user_id}", response_model=UserResponse)

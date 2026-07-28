@@ -11,3 +11,4 @@ db = client[DATABASE_NAME]
 # Collections
 company_collection = db["companies"]
 user_collection = db["users"]
+document_collection = db["documents"]

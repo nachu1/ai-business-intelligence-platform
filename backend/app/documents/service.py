@@ -52,10 +52,12 @@ async def save_document(file: UploadFile):
 }
 async def create_document_metadata(
     file_info: dict,
-    document_type: str
+    document_type: str,
+    company_id: str
 ):
 
     document = {
+        "company_id": ObjectId(company_id),
         "original_filename": file_info["original_filename"],
         "stored_filename": file_info["stored_filename"],
         "storage_path": file_info["file_path"],
@@ -102,13 +104,14 @@ async def process_document(document_id: str):
        print(f"Processing Chunk {index + 1}")
 
        doc = Document(
-        page_content=chunk,
-        metadata={
-          "document_id": document_id,
-          "chunk_number": index,
-          "document_type": document["document_type"],
-          "source": document["original_filename"]
-        }
+         page_content=chunk,
+         metadata={
+            "document_id": document_id,
+            "company_id": str(document["company_id"]),
+            "chunk_number": index,
+            "document_type": document["document_type"],
+            "source": document["original_filename"]
+         }
        )
 
     vector_store.add_documents(

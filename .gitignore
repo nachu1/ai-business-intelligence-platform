@@ -8,3 +8,12 @@ __pycache__/
 
 # Environment variables
 .env
+
+# Uploaded documents
+backend/uploads/
+
+# ChromaDB database
+backend/chroma_db/
+
+# Test cache
+.pytest_cache/

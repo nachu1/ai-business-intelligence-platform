@@ -1,7 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, Form
 from app.documents.schemas import DocumentType
 from fastapi import BackgroundTasks
-from app.ai.langchain_vectordb import retriever
+from app.ai.rag_chain import rag_chain
 from app.documents.schemas import SearchRequest
 from app.documents.service import (
     save_document,
@@ -52,17 +52,11 @@ async def upload_document(
 @router.post("/search")
 async def search_documents_endpoint(request: SearchRequest):
 
-    results = retriever.invoke(request.question)
-
-    formatted_results = []
-
-    for doc in results:
-      formatted_results.append({
-        "content": doc.page_content,
-        "metadata": doc.metadata
-      })
+    response = rag_chain.invoke({
+    "input": request.question
+    })
 
     return {
-      "question": request.question,
-      "results": formatted_results
+     "question": request.question,
+     "answer": response["answer"]
 }

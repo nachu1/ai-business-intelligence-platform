@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 from enum import Enum
@@ -23,7 +23,11 @@ class DocumentType(str, Enum):
 class DocumentResponse(BaseModel):
     id: str
     company_id: str
+
     uploaded_by: str
+    uploader_name: str
+
+    department_id: Optional[str] = None
 
     original_filename: str
     stored_filename: str
@@ -39,6 +43,7 @@ class DocumentResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     processed_at: Optional[datetime] = None
-    
+
+
 class SearchRequest(BaseModel):
     question: str

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from jose import jwt, JWTError
 from fastapi import Depends, HTTPException, status
@@ -13,51 +13,105 @@ from app.config.settings import (
 
 security = HTTPBearer()
 
+REFRESH_TOKEN_EXPIRE_DAYS = 7
+
 
 def create_access_token(data: dict):
-    to_encode = data.copy()
-
-    expire = datetime.utcnow() + timedelta(
+    payload = data.copy()
+    payload["type"] = "access"
+    payload["exp"] = datetime.now(timezone.utc) + timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES
     )
 
-    to_encode.update({"exp": expire})
+    return jwt.encode(
+        payload,
+        SECRET_KEY,
+        algorithm=ALGORITHM,
+    )
+
+
+def create_refresh_token(data: dict):
+    payload = data.copy()
+    payload["type"] = "refresh"
+    payload["exp"] = datetime.now(timezone.utc) + timedelta(
+        days=REFRESH_TOKEN_EXPIRE_DAYS
+    )
 
     return jwt.encode(
-        to_encode,
+        payload,
         SECRET_KEY,
-        algorithm=ALGORITHM
+        algorithm=ALGORITHM,
     )
 
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials"
+    user = await get_user_from_token(
+        credentials.credentials
     )
 
-    try:
-        token = credentials.credentials
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
 
+    return user
+
+
+async def get_user_from_token(token: str):
+    try:
         payload = jwt.decode(
             token,
             SECRET_KEY,
-            algorithms=[ALGORITHM]
+            algorithms=[ALGORITHM],
         )
+
+        if payload.get("type") != "access":
+            return None
 
         email = payload.get("sub")
 
         if email is None:
-            raise credentials_exception
+            return None
+
+        user = await get_user_by_email(email)
+
+        if user is None:
+            return None
+
+        return user
 
     except JWTError:
-        raise credentials_exception
+        return None
 
-    user = await get_user_by_email(email)
 
-    if user is None:
-        raise credentials_exception
+async def get_user_from_refresh_token(token: str):
+    try:
+        payload = jwt.decode(
+            token,
+            SECRET_KEY,
+            algorithms=[ALGORITHM],
+        )
 
-    return user
+        if payload.get("type") != "refresh":
+            return None
+
+        email = payload.get("sub")
+
+        if email is None:
+            return None
+
+        user = await get_user_by_email(email)
+
+        if user is None:
+            return None
+
+        if not user.get("is_active", False):
+            return None
+
+        return user
+
+    except JWTError:
+        return None

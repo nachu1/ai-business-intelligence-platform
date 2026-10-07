@@ -149,4 +149,4 @@ Dashboard + Email
 
 Watch the demo video to explore BizInsight.
 
-[▶️ Watch BizInsight Demo](PASTE_YOUR_LINKEDIN_POST_URL_HERE)
+[▶️ Watch BizInsight Demo](https://drive.google.com/file/d/1-rcjn_TPctCRrxJKLuaPZAu4dEDK9327/view?usp=drivesdk)

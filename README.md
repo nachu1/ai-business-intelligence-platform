@@ -147,6 +147,6 @@ Dashboard + Email
 
 ## 🎥 Project Demo
 
-Watch the demo video to explore BizInsight's multi-agent AI architecture, document analysis, RAG and hybrid search, business insights, and AI chatbot.
+Watch the demo video to explore BizInsight.
 
 [▶️ Watch BizInsight Demo](PASTE_YOUR_LINKEDIN_POST_URL_HERE)

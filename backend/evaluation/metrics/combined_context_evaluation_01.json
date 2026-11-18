@@ -1,0 +1,49 @@
+{
+  "evaluation_id": "combined_context_evaluation_01",
+  "evaluator_model": "openai/gpt-oss-120b",
+  "evaluation_type": "combined_context_support",
+  "question_count": 5,
+  "supported_count": 5,
+  "results": [
+    {
+      "user_input": "How much did revenue increase from March to June 2026?",
+      "reference": "Revenue increased from ₹8,50,000 in March to ₹12,00,000 in June, an increase of ₹3,50,000.",
+      "existing_context_precision": 0.0,
+      "combined_context_support": true,
+      "reason": "Context 1 provides March revenue of ₹8,50,000. Context 2 provides June revenue of ₹12,00,000. The difference between these figures is ₹3,50,000, matching the reference answer's claim of the increase.",
+      "context_count": 2
+    },
+    {
+      "user_input": "How did net profit change from March through June 2026?",
+      "reference": "Net profit was ₹2,30,000 in March, ₹2,70,000 in April, ₹3,40,000 in May, and ₹4,20,000 in June. Overall, it increased by ₹1,90,000 from March to June.",
+      "existing_context_precision": 0.0,
+      "combined_context_support": true,
+      "reason": "The combined contexts provide explicit net profit figures for each month: March ₹230,000 (Context 1), April ₹270,000 (Context 1), May ₹3,40,000 (Context 3), and June ₹4,20,000 (Context 2). Using the March and June values, the difference is ₹4,20,000 - ₹2,30,000 = ₹1,90,000, matching the reference's claim of the overall increase. All required data are present, and the calculation is straightforward, so the reference answer is fully supported.",
+      "context_count": 3
+    },
+    {
+      "user_input": "Which month had the highest revenue from March to June 2026, and what was the amount?",
+      "reference": "June had the highest revenue at ₹12,00,000.",
+      "existing_context_precision": 0.0,
+      "combined_context_support": true,
+      "reason": "Context 1 gives March revenue ₹8,50,000; Context 3 gives April revenue ₹920,000; Context 4 gives May revenue ₹10,50,000; Context 2 explicitly states June revenue ₹12,00,000. Comparing these values shows June has the highest revenue, matching the reference answer.",
+      "context_count": 4
+    },
+    {
+      "user_input": "How much and by what percentage did revenue increase from May to June 2026?",
+      "reference": "Revenue increased from ₹10,50,000 in May to ₹12,00,000 in June, an increase of ₹1,50,000, or approximately 14.29%.",
+      "existing_context_precision": 0.0,
+      "combined_context_support": true,
+      "reason": "Context 2 provides May revenue of ₹10,50,000 and Context 1 provides June revenue of ₹12,00,000. The difference is ₹1,50,000, and (₹1,50,000 / ₹10,50,000) * 100 ≈ 14.29%, matching the reference answer.",
+      "context_count": 2
+    },
+    {
+      "user_input": "What was the total revenue from March through June 2026?",
+      "reference": "Total revenue from March through June 2026 was ₹40,20,000: ₹8,50,000 in March, ₹9,20,000 in April, ₹10,50,000 in May, and ₹12,00,000 in June.",
+      "existing_context_precision": 0.0,
+      "combined_context_support": true,
+      "reason": "The combined contexts provide explicit revenue figures for each month: March ₹8,50,000 (Context 1), April ₹9,20,000 (Context 3), May ₹10,50,000 (Context 4), and June ₹12,00,000 (Context 2). Summing these values yields ₹40,20,000, matching the reference answer's total and breakdown.",
+      "context_count": 4
+    }
+  ]
+}

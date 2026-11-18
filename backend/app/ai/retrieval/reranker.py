@@ -1,3 +1,4 @@
+from langsmith import traceable
 from sentence_transformers import CrossEncoder
 
 
@@ -6,6 +7,7 @@ model = CrossEncoder(
 )
 
 
+@traceable(name="Cross-Encoder Reranker")
 def rerank(
     query: str,
     documents,
@@ -27,7 +29,27 @@ def rerank(
         reverse=True,
     )
 
-    return [
-        document
-        for document, _ in ranked[:k]
-    ]
+    print("\n===== RERANKER RESULTS =====")
+    print("Query:", query)
+
+    results = []
+
+    for index, (document, score) in enumerate(
+        ranked[:k],
+        start=1,
+    ):
+        score = float(score)
+
+        # Preserve the existing Document object while
+        # exposing the reranker score for downstream analysis.
+        document.metadata["rerank_score"] = score
+
+        print(f"\nRank {index}")
+        print("Score:", score)
+        print("Content:", document.page_content[:300])
+
+        results.append(document)
+
+    print("============================\n")
+
+    return results

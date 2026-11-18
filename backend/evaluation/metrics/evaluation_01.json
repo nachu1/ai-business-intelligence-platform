@@ -1,0 +1,138 @@
+{
+  "evaluation_id": "evaluation_01",
+  "input_file": "C:\\ai-business-platform\\backend\\evaluation\\runs\\evaluation_01.json",
+  "evaluator_model": "openai/gpt-oss-120b",
+  "question_count": 10,
+  "average_scores": {
+    "faithfulness": 0.8257142857142856,
+    "context_precision": 0.49999999997,
+    "context_recall": 0.9
+  },
+  "individual_scores": [
+    {
+      "user_input": "How much did revenue increase from March to June 2026?",
+      "retrieved_contexts": [
+        "₹40,000 from March to April.\nMetric\nMarch (original)\nApril (original)\nChange\nRevenue\n₹850,000\n₹920,000\n+ ₹70,000\nExpenses\n₹620,000\n₹650,000\n+ ₹30,000\nNet profit\n₹230,000\n₹270,000\n+ ₹40,000\nThe April source says revenue increased compared with the previous month but does not specify the percentage. Using\nthe supplied March and April totals, the calculated increase is approximately 8.24%. This calculation is derived from the\ntwo reports, not quoted from the April source.",
+        "ABC Retail Pvt. Ltd. | June 2026 | Expanded evaluation document\nPage 1\nABC RETAIL PVT. LTD.\nMonthly Sales Report — June 2026\nSource-grounded summary\nThe original June report records revenue of ₹12,00,000, expenses of ₹7,80,000, and net profit of ₹4,20,000. It identifies\nTablet as the top-selling product, Smartphone as the item below the preferred stock level, and Chennai as the\ntop-performing region. The report also notes that expenses increased as sales volume grew.\nRevenue\n₹12,00,000\nExpenses"
+      ],
+      "response": "Revenue increased by **₹350,000** from March to June 2026.\n\n*   **March Revenue:** ₹850,000\n*   **June Revenue:** ₹1,200,000\n*   **Increase:** ₹1,200,000 - ₹850,000 = **₹350,000**",
+      "reference": "Revenue increased from ₹8,50,000 in March to ₹12,00,000 in June, an increase of ₹3,50,000.",
+      "faithfulness": 0.0,
+      "context_precision": 0.0,
+      "context_recall": 1.0
+    },
+    {
+      "user_input": "What was the percentage increase in revenue from March to April 2026?",
+      "retrieved_contexts": [
+        "₹40,000 from March to April.\nMetric\nMarch (original)\nApril (original)\nChange\nRevenue\n₹850,000\n₹920,000\n+ ₹70,000\nExpenses\n₹620,000\n₹650,000\n+ ₹30,000\nNet profit\n₹230,000\n₹270,000\n+ ₹40,000\nThe April source says revenue increased compared with the previous month but does not specify the percentage. Using\nthe supplied March and April totals, the calculated increase is approximately 8.24%. This calculation is derived from the\ntwo reports, not quoted from the April source.",
+        "ABC Retail | Synthetic RAG evaluation document\nPage 5\n4. Month-over-month context and evidence limits\nComparison with March\nThe original March report records revenue of ₹8,50,000, expenses of ₹6,20,000, and net profit of ₹2,30,000. The original\nApril report records revenue of ₹9,20,000, expenses of ₹6,50,000, and net profit of ₹2,70,000. Therefore, based on the\ntwo supplied reports, revenue increased by ₹70,000, expenses increased by ₹30,000, and net profit increased by"
+      ],
+      "response": "The percentage increase in revenue from March to April was approximately **8.24%**.",
+      "reference": "Revenue increased from ₹8,50,000 to ₹9,20,000, an increase of approximately 8.24%.",
+      "faithfulness": 1.0,
+      "context_precision": 0.99999999995,
+      "context_recall": 1.0
+    },
+    {
+      "user_input": "How did net profit change from March through June 2026?",
+      "retrieved_contexts": [
+        "₹40,000 from March to April.\nMetric\nMarch (original)\nApril (original)\nChange\nRevenue\n₹850,000\n₹920,000\n+ ₹70,000\nExpenses\n₹620,000\n₹650,000\n+ ₹30,000\nNet profit\n₹230,000\n₹270,000\n+ ₹40,000\nThe April source says revenue increased compared with the previous month but does not specify the percentage. Using\nthe supplied March and April totals, the calculated increase is approximately 8.24%. This calculation is derived from the\ntwo reports, not quoted from the April source.",
+        "ABC Retail Pvt. Ltd. | June 2026 | Expanded evaluation document\nPage 1\nABC RETAIL PVT. LTD.\nMonthly Sales Report — June 2026\nSource-grounded summary\nThe original June report records revenue of ₹12,00,000, expenses of ₹7,80,000, and net profit of ₹4,20,000. It identifies\nTablet as the top-selling product, Smartphone as the item below the preferred stock level, and Chennai as the\ntop-performing region. The report also notes that expenses increased as sales volume grew.\nRevenue\n₹12,00,000\nExpenses",
+        "What was May net profit?\n₹3,40,000 — explicitly reported source fact.\nWhich was the top product in May?\nSmartphone — explicitly reported source fact.\nWhich region was the top region in May?\nBengaluru — explicitly reported source fact.\nWhat was Laptop's stock status?\nThe source says Laptop had the lowest stock but was above\nreorder level.\nHow much illustrative revenue came from\nBengaluru?\n₹3,10,000 — synthetic table only; state that it is illustrative.\nWhat were marketing expenses in May?"
+      ],
+      "response": "Net profit consistently increased from March through June 2026.\n\nHere's a breakdown of the net profit and its changes:\n\n*   **March Net Profit**: **₹230,000**\n*   **April Net Profit**: **₹270,000** (an increase of **₹40,000** from March)\n*   **May Net Profit**: **₹340,000** (an increase of **₹70,000** from April)\n*   **June Net Profit**: **₹420,000** (an increase of **₹80,000** from May)\n\nThe total increase in net profit from March to June was **₹190,000**.",
+      "reference": "Net profit was ₹2,30,000 in March, ₹2,70,000 in April, ₹3,40,000 in May, and ₹4,20,000 in June. Overall, it increased by ₹1,90,000 from March to June.",
+      "faithfulness": 0.9,
+      "context_precision": 0.0,
+      "context_recall": 1.0
+    },
+    {
+      "user_input": "Which month had the highest revenue from March to June 2026, and what was the amount?",
+      "retrieved_contexts": [
+        "ABC Retail | Synthetic RAG evaluation document\nPage 1\nABC RETAIL PVT. LTD.\nDetailed Monthly Business Report — March 2026\nReporting period: 1–31 March 2026\nCurrency: Indian Rupees (INR)\nExecutive summary\nThe original March report records total revenue of ₹8,50,000, total expenses of ₹6,20,000, and net profit of ₹2,30,000.\nLaptop was the top product and Kochi was the top region. Wireless Mouse inventory was below the reorder level. The",
+        "ABC Retail Pvt. Ltd. | June 2026 | Expanded evaluation document\nPage 5\n4. Evaluation guide and data provenance\nUse this expanded report to test retrieval across multiple sections, distinguish source facts from synthetic detail, preserve\nnumerical consistency, and abstain when evidence is missing.\nQuestion\nExpected evidence / handling\nWhat was June revenue?\n₹12,00,000 — explicitly reported source fact.\nWhat were June expenses?\n₹7,80,000 — explicitly reported source fact.",
+        "₹40,000 from March to April.\nMetric\nMarch (original)\nApril (original)\nChange\nRevenue\n₹850,000\n₹920,000\n+ ₹70,000\nExpenses\n₹620,000\n₹650,000\n+ ₹30,000\nNet profit\n₹230,000\n₹270,000\n+ ₹40,000\nThe April source says revenue increased compared with the previous month but does not specify the percentage. Using\nthe supplied March and April totals, the calculated increase is approximately 8.24%. This calculation is derived from the\ntwo reports, not quoted from the April source.",
+        "Revenue\n₹10,50,000\nExpenses\n₹7,10,000\nNet Profit\n₹3,40,000\nKey observations\nArea\nMay report observation\nSales\nRevenue increased compared with the previous month.\nProduct performance\nSmartphone was the top product.\nInventory\nLaptop had the lowest stock, but its inventory was above the reorder level.\nRegional performance\nBengaluru was the top-performing region.\nSource note: These summary facts are taken from the original one-page May report. It does not provide exact product, region, weekly, or"
+      ],
+      "response": "The month with the highest revenue from March to June 2026 was **June**, with an amount of **₹12,00,000**.\n\nHere is a breakdown of the revenue for each month:\n\n*   **March 2026**: ₹8,50,000\n*   **April 2026**: ₹9,20,000\n*   **May 2026**: ₹10,50,000\n*   **June 2026**: ₹12,00,000",
+      "reference": "June had the highest revenue at ₹12,00,000.",
+      "faithfulness": 1.0,
+      "context_precision": 0.0,
+      "context_recall": 1.0
+    },
+    {
+      "user_input": "What was the net profit margin in April 2026?",
+      "retrieved_contexts": [
+        "Headline performance\nMetric\nApril 2026 value\nSource / note\nTotal revenue\n₹920,000\nOriginal report\nTotal expenses\n₹650,000\nOriginal report\nNet profit\n₹270,000\nOriginal report\nNet profit margin\n29.3%\nCalculated: profit ÷ revenue\nTop product\nLaptop\nOriginal report\nTop region\nKochi\nOriginal report\nLowest-stock product\nWireless Mouse\nBelow reorder level",
+        "ABC Retail | Synthetic RAG evaluation document\nPage 1\nABC RETAIL PVT. LTD.\nDetailed Monthly Business Report — April 2026\nReporting period: 1–30 April 2026\nCurrency: Indian Rupees (INR)\nExecutive summary\nThe original April report records total revenue of ₹9,20,000, total expenses of ₹6,50,000, and net profit of ₹2,70,000.\nLaptop was the top product, Wireless Mouse was the lowest-stock product, and Kochi was the top region. The report"
+      ],
+      "response": "The net profit margin in April 2026 was **29.3%**.",
+      "reference": "Using net profit of ₹2,70,000 and revenue of ₹9,20,000, the net profit margin was approximately 29.35%.",
+      "faithfulness": 1.0,
+      "context_precision": 0.99999999995,
+      "context_recall": 1.0
+    },
+    {
+      "user_input": "How much and by what percentage did revenue increase from May to June 2026?",
+      "retrieved_contexts": [
+        "ABC Retail Pvt. Ltd. | June 2026 | Expanded evaluation document\nPage 1\nABC RETAIL PVT. LTD.\nMonthly Sales Report — June 2026\nSource-grounded summary\nThe original June report records revenue of ₹12,00,000, expenses of ₹7,80,000, and net profit of ₹4,20,000. It identifies\nTablet as the top-selling product, Smartphone as the item below the preferred stock level, and Chennai as the\ntop-performing region. The report also notes that expenses increased as sales volume grew.\nRevenue\n₹12,00,000\nExpenses",
+        "ABC Retail Pvt. Ltd. | May 2026 | Expanded evaluation document\nPage 1\nABC RETAIL PVT. LTD.\nMonthly Sales Report — May 2026\nSource-grounded summary\nThe original May report records revenue of ₹10,50,000, expenses of ₹7,10,000, and net profit of ₹3,40,000. It identifies\nSmartphone as the top product, Laptop as the item with the lowest stock, and Bengaluru as the top region. The report\nalso states that Laptop inventory was above the reorder level.\nRevenue\n₹10,50,000\nExpenses\n₹7,10,000\nNet Profit"
+      ],
+      "response": "Revenue increased by **₹1,50,000**, which is a **14.29%** increase from May to June 2026.\n\nHere's the breakdown:\n*   **May 2026 Revenue**: ₹10,50,000\n*   **June 2026 Revenue**: ₹12,00,000\n*   **Absolute Increase**: ₹12,00,000 - ₹10,50,000 = **₹1,50,000**\n*   **Percentage Increase**: (₹1,50,000 / ₹10,50,000) * 100 = **14.29%**",
+      "reference": "Revenue increased from ₹10,50,000 in May to ₹12,00,000 in June, an increase of ₹1,50,000, or approximately 14.29%.",
+      "faithfulness": 0.8571428571428571,
+      "context_precision": 0.0,
+      "context_recall": 1.0
+    },
+    {
+      "user_input": "What were the top-selling products in March and June 2026?",
+      "retrieved_contexts": [
+        "ABC Retail Pvt. Ltd. | June 2026 | Expanded evaluation document\nPage 1\nABC RETAIL PVT. LTD.\nMonthly Sales Report — June 2026\nSource-grounded summary\nThe original June report records revenue of ₹12,00,000, expenses of ₹7,80,000, and net profit of ₹4,20,000. It identifies\nTablet as the top-selling product, Smartphone as the item below the preferred stock level, and Chennai as the\ntop-performing region. The report also notes that expenses increased as sales volume grew.\nRevenue\n₹12,00,000\nExpenses",
+        "ABC Retail | Synthetic RAG evaluation document\nPage 1\nABC RETAIL PVT. LTD.\nDetailed Monthly Business Report — March 2026\nReporting period: 1–31 March 2026\nCurrency: Indian Rupees (INR)\nExecutive summary\nThe original March report records total revenue of ₹8,50,000, total expenses of ₹6,20,000, and net profit of ₹2,30,000.\nLaptop was the top product and Kochi was the top region. Wireless Mouse inventory was below the reorder level. The"
+      ],
+      "response": "The top-selling products were:\n\n*   **March 2026**: **Laptop**\n*   **June 2026**: **Tablet**",
+      "reference": "The top-selling product was Laptop in March and Tablet in June.",
+      "faithfulness": 0.6666666666666666,
+      "context_precision": 0.99999999995,
+      "context_recall": 1.0
+    },
+    {
+      "user_input": "Which regions performed best in May and June 2026?",
+      "retrieved_contexts": [
+        "ABC Retail Pvt. Ltd. | June 2026 | Expanded evaluation document\nPage 1\nABC RETAIL PVT. LTD.\nMonthly Sales Report — June 2026\nSource-grounded summary\nThe original June report records revenue of ₹12,00,000, expenses of ₹7,80,000, and net profit of ₹4,20,000. It identifies\nTablet as the top-selling product, Smartphone as the item below the preferred stock level, and Chennai as the\ntop-performing region. The report also notes that expenses increased as sales volume grew.\nRevenue\n₹12,00,000\nExpenses",
+        "ABC Retail Pvt. Ltd. | May 2026 | Expanded evaluation document\nPage 1\nABC RETAIL PVT. LTD.\nMonthly Sales Report — May 2026\nSource-grounded summary\nThe original May report records revenue of ₹10,50,000, expenses of ₹7,10,000, and net profit of ₹3,40,000. It identifies\nSmartphone as the top product, Laptop as the item with the lowest stock, and Bengaluru as the top region. The report\nalso states that Laptop inventory was above the reorder level.\nRevenue\n₹10,50,000\nExpenses\n₹7,10,000\nNet Profit"
+      ],
+      "response": "The top-performing regions were:\n\n*   **May 2026**: **Bengaluru**\n*   **June 2026**: **Chennai**",
+      "reference": "Bengaluru was the top-performing region in May, and Chennai was the top-performing region in June.",
+      "faithfulness": 1.0,
+      "context_precision": 0.9999999999,
+      "context_recall": 1.0
+    },
+    {
+      "user_input": "What was the total revenue from March through June 2026?",
+      "retrieved_contexts": [
+        "ABC Retail | Synthetic RAG evaluation document\nPage 1\nABC RETAIL PVT. LTD.\nDetailed Monthly Business Report — March 2026\nReporting period: 1–31 March 2026\nCurrency: Indian Rupees (INR)\nExecutive summary\nThe original March report records total revenue of ₹8,50,000, total expenses of ₹6,20,000, and net profit of ₹2,30,000.\nLaptop was the top product and Kochi was the top region. Wireless Mouse inventory was below the reorder level. The",
+        "ABC Retail Pvt. Ltd. | June 2026 | Expanded evaluation document\nPage 1\nABC RETAIL PVT. LTD.\nMonthly Sales Report — June 2026\nSource-grounded summary\nThe original June report records revenue of ₹12,00,000, expenses of ₹7,80,000, and net profit of ₹4,20,000. It identifies\nTablet as the top-selling product, Smartphone as the item below the preferred stock level, and Chennai as the\ntop-performing region. The report also notes that expenses increased as sales volume grew.\nRevenue\n₹12,00,000\nExpenses",
+        "₹40,000 from March to April.\nMetric\nMarch (original)\nApril (original)\nChange\nRevenue\n₹850,000\n₹920,000\n+ ₹70,000\nExpenses\n₹620,000\n₹650,000\n+ ₹30,000\nNet profit\n₹230,000\n₹270,000\n+ ₹40,000\nThe April source says revenue increased compared with the previous month but does not specify the percentage. Using\nthe supplied March and April totals, the calculated increase is approximately 8.24%. This calculation is derived from the\ntwo reports, not quoted from the April source.",
+        "ABC Retail Pvt. Ltd. | May 2026 | Expanded evaluation document\nPage 5\n4. Evaluation guide and data provenance\nUse this expanded report to test whether the RAG system can distinguish source facts from synthetic detail, retrieve facts\nacross sections, and avoid presenting illustrative numbers as company records.\nQuestion\nExpected evidence / handling\nWhat was May revenue?\n₹10,50,000 — explicitly reported source fact.\nWhat was May net profit?\n₹3,40,000 — explicitly reported source fact."
+      ],
+      "response": "The total revenue from March through June 2026 was **₹40,20,000**.\n\nHere is the breakdown by month:\n*   **March 2026**: ₹8,50,000\n*   **April 2026**: ₹9,20,000\n*   **May 2026**: ₹10,50,000\n*   **June 2026**: ₹12,00,000",
+      "reference": "Total revenue from March through June 2026 was ₹40,20,000: ₹8,50,000 in March, ₹9,20,000 in April, ₹10,50,000 in May, and ₹12,00,000 in June.",
+      "faithfulness": 0.8333333333333334,
+      "context_precision": 0.0,
+      "context_recall": 0.0
+    },
+    {
+      "user_input": "What was the difference between June revenue and June expenses?",
+      "retrieved_contexts": [
+        "ABC Retail Pvt. Ltd. | June 2026 | Expanded evaluation document\nPage 5\n4. Evaluation guide and data provenance\nUse this expanded report to test retrieval across multiple sections, distinguish source facts from synthetic detail, preserve\nnumerical consistency, and abstain when evidence is missing.\nQuestion\nExpected evidence / handling\nWhat was June revenue?\n₹12,00,000 — explicitly reported source fact.\nWhat were June expenses?\n₹7,80,000 — explicitly reported source fact.",
+        "Revenue\n₹12,00,000\nExpenses\n₹7,80,000\nNet Profit\n₹4,20,000\nKey observations\nArea\nJune report observation\nSales\nRevenue increased compared with the previous month.\nProduct performance\nTablet was the top-selling product.\nInventory\nSmartphone inventory was below the preferred stock level.\nRegional performance\nChennai was the top-performing region.\nExpenses\nExpenses increased as sales volume grew."
+      ],
+      "response": "The difference between June revenue and June expenses was **₹4,20,000**.",
+      "reference": "June revenue was ₹12,00,000 and expenses were ₹7,80,000, so the difference was ₹4,20,000.",
+      "faithfulness": 1.0,
+      "context_precision": 0.99999999995,
+      "context_recall": 1.0
+    }
+  ]
+}

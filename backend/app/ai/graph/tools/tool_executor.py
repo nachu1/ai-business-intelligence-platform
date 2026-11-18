@@ -4,10 +4,12 @@ from app.ai.graph.tools.company_tools import (
     get_available_documents,
     get_my_manager,
     get_manager_employees,
+    get_company_reporting_structure,
     get_employee_count,
     get_manager_count,
     get_department_employees,
     get_department_count,
+    get_all_company_employees,
     get_user_by_name,
 )
 
@@ -42,7 +44,10 @@ async def execute_company_tool(
            current_user
         )
 
-    
+    if tool_name == "get_company_reporting_structure":
+        return await get_company_reporting_structure(
+            current_user
+        )
 
     if tool_name == "get_employee_count":
         return await get_employee_count(
@@ -52,6 +57,10 @@ async def execute_company_tool(
     if tool_name == "get_manager_count":
         return await get_manager_count(
             current_user
+        )
+    if tool_name == "get_all_company_employees":
+        return await get_all_company_employees(
+          current_user
         )
 
     if tool_name == "get_department_employees":

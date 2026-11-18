@@ -1,3 +1,4 @@
+
 def reciprocal_rank_fusion(
     result_lists,
     k: int = 60,

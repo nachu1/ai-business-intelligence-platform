@@ -1,8 +1,11 @@
+
 from typing import Literal
+import asyncio
+import json
 
 from pydantic import BaseModel
 
-from app.ai.langchain_llm import llm
+from app.ai.langchain_llm import supervisor_llm, groq_llm
 
 
 class SupervisorDecision(BaseModel):
@@ -11,121 +14,161 @@ class SupervisorDecision(BaseModel):
         "rag",
         "general",
     ]
+    search_query: str | None = None
 
 
 async def supervisor_agent(
     question: str,
     chat_history: list,
-) -> str:
+) -> tuple[SupervisorDecision, str]:
+
+    recent_history = chat_history[-6:]
+
+    history_text = "\n".join(
+        f"{message.type.capitalize()}: {message.content}"
+        for message in recent_history
+    )
 
     prompt = f"""
 You are the supervisor agent for a business management AI platform.
 
-Your job is to decide which specialized agent should handle
-the user's current question.
+Choose the most appropriate agent for the user's current question.
 
-Available agents:
+AVAILABLE AGENTS:
 
 company:
-Handles company-specific information such as:
-- users
-- employees
-- managers
-- departments
-- roles
-- designations
-- permissions
-- access
-- the current user's profile
-- company organizational information
-- company documents as objects or access-controlled resources
+Handles application-managed company data:
+- Employees, users, managers and profiles
+- Departments, roles and designations
+- Organizational relationships and reporting structures
+- Permissions, access and document metadata
 
 rag:
-Handles information contained inside uploaded documents.
-Examples:
-- sales reports
-- resumes
-- PDFs
-- financial reports
-- project reports
-- document summaries
-- facts contained in documents
-- comparisons or analysis based on document content
+Handles information contained in uploaded company documents:
+- Reports, PDFs, resumes and business documents
+- Facts, figures, metrics and financial information
+- Document summaries, comparisons and analysis
+- Information about people, projects, events or topics mentioned
+  in uploaded documents
 
 general:
-Handles general knowledge and tasks that do not require
-company data or uploaded document content.
-Examples:
-- writing
-- rewriting
-- translation
-- programming explanations
-- brainstorming
-- general questions
+Handles requests that do not require company data or uploaded
+documents, including general knowledge, writing, translation,
+programming explanations and brainstorming.
 
-IMPORTANT ROUTING RULES:
+ROUTING RULES:
 
-1. If the current question requires company-specific data,
-   choose "company".
+1. Choose "company" when the answer requires structured,
+   application-managed company or employee information.
 
-2. If the current question requires information from
-   uploaded document content, choose "rag".
+2. Choose "rag" only when the user needs information from the
+   actual contents of uploaded documents.
 
-3. If the current question is general and does not require
-   company data or document content, choose "general".
+   Document names, document listings, upload status,
+   document availability and access permissions belong
+   to the company agent.
 
-4. Questions about document permissions, document access,
-   who uploaded a document, or whether a document exists
-   belong to "company".
+3. Do not assume that a person's name means an employee
+   database lookup. Questions such as "Tell me about June Month",
+   "Who is June Month?" or "Give me details about June Month"
+   should normally route to "rag".
 
-5. Do not choose "rag" simply because the question contains
-   the word "document".
+4. Choose "general" when neither company data nor uploaded
+   document information is required.
 
-6. IMPORTANT:
-   Use the conversation history to understand follow-up
-   questions.
+5. Use conversation history to understand follow-up questions,
+   resolve references and preserve the relevant information source.
+   If the user changes the topic, select a new route.
 
-   For example:
+6. Do not route based only on keywords. Understand what information
+   the user actually wants.
 
-   User: Who is John?
-   → company
+DOCUMENT ROUTING:
 
-   User: Does he work here?
-   → company
+- Questions about listing, finding, checking, or accessing documents
+  must route to company.
 
-   User: What department is he in?
-   → company
+- Questions about documents uploaded by the current user
+  must route to company.
 
-   User: What does his resume say about his experience?
-   → rag
+- Questions asking whether the user has uploaded documents
+  must route to company.
 
-7. If a follow-up question uses words such as:
-   "he", "she", "they", "him", "her", "that person",
-   "that employee", "this document", or "it",
-   use the conversation history to understand what
-   the user is referring to before choosing the route.
+- Questions asking about another user's document availability
+  must route to company, where the company tools enforce permissions.
 
-8. Preserve the route of the previous topic when the
-   follow-up clearly continues that topic.
+- Questions about the actual content of uploaded documents,
+  such as summaries, financial figures, explanations and analysis,
+  must route to rag.
+
+- Examples:
+  "Show my documents" -> company
+  "Do I have any documents?" -> company
+  "Can I access John's document?" -> company
+  "Show available documents" -> company
+  "Summarize my uploaded report" -> rag
+  "What is the revenue in my report?" -> rag
+
+- Never route document availability questions to rag.
+SEARCH QUERY:
+- For "rag", generate a concise standalone search query that
+  preserves the subject, intent, relevant dates and metrics.
+- Resolve references using conversation history.
+- For "company" and "general", set search_query to null.
 
 CONVERSATION HISTORY:
-{chat_history}
+{history_text}
 
 CURRENT USER QUESTION:
 {question}
 
-Return ONLY the appropriate agent.
+Return the most appropriate route and search_query.
 """
 
-    structured_llm = llm.with_structured_output(
-        SupervisorDecision
-    )
+    try:
+        structured_llm = supervisor_llm.with_structured_output(
+            SupervisorDecision
+        )
 
-    response = await structured_llm.ainvoke(prompt)
+        response = await asyncio.wait_for(
+            structured_llm.ainvoke(prompt),
+            timeout=5,
+        )
 
-    print(
-        "SUPERVISOR AGENT:",
-        response.route,
-    )
+        provider = "gemini"
 
-    return response.route
+        print("SUPERVISOR PROVIDER: Gemini", flush=True)
+
+    except Exception as error:
+        print(
+            f"Gemini Supervisor failed: {type(error).__name__}: {error}. "
+            "Switching to Groq.",
+            flush=True,
+        )
+
+        groq_response = await groq_llm.ainvoke(
+            prompt + """
+
+Return ONLY valid JSON in this exact format:
+{
+    "route": "general",
+    "search_query": null
+}
+
+The route must be one of: company, rag, general.
+Do not call tools. Do not include markdown.
+"""
+        )
+
+        response = SupervisorDecision.model_validate(
+            json.loads(groq_response.content)
+        )
+
+        provider = "groq"
+
+        print("SUPERVISOR PROVIDER: Groq", flush=True)
+
+    print("SUPERVISOR AGENT:", response.route, flush=True)
+    print("SUPERVISOR SEARCH QUERY:", response.search_query, flush=True)
+
+    return response, provider

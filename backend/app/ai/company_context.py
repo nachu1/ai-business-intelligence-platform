@@ -475,3 +475,35 @@ async def get_company_context(current_user: dict) -> str:
         )
 
     return "\n".join(lines)
+
+def get_rag_company_context(current_user: dict) -> str:
+    role = current_user.get("role", "Unknown")
+    name = current_user.get("name", "Unknown")
+
+    if role == "admin":
+        access = (
+            "The user is an administrator with company-wide access."
+        )
+    elif role == "manager":
+        access = (
+            "The user is a manager and can access information "
+            "authorized for their department."
+        )
+    elif role == "employee":
+        access = (
+            "The user is an employee and can access only "
+            "information authorized for them."
+        )
+    else:
+        access = "The user's access is restricted to authorized information."
+
+    return (
+        "AUTHORIZED USER CONTEXT:\n"
+        f"- Name: {name}\n"
+        f"- Role: {role}\n"
+        f"- {access}\n\n"
+        "SECURITY RULE:\n"
+        "- Use only the authorized document context provided below.\n"
+        "- Never invent information.\n"
+        "- Never reveal information outside the authorized context."
+    )

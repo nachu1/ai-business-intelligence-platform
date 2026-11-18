@@ -12,42 +12,28 @@ from app.ai.agents.general_agent import general_agent
 
 
 async def supervisor_node(state: GraphState):
-    route = await supervisor_agent(
+    response, provider = await supervisor_agent(
         question=state["input"],
         chat_history=state["chat_history"],
     )
 
-    state["route"] = route
+    state["route"] = response.route
+    state["search_query"] = response.search_query
+    state["provider"] = provider
+
+    print("SELECTED PROVIDER:", provider, flush=True)
 
     return state
 
 
 builder = StateGraph(GraphState)
 
-builder.add_node(
-    "supervisor",
-    supervisor_node,
-)
+builder.add_node("supervisor", supervisor_node)
+builder.add_node("company", company_agent)
+builder.add_node("rag", rag_agent)
+builder.add_node("general", general_agent)
 
-builder.add_node(
-    "company",
-    company_agent,
-)
-
-builder.add_node(
-    "rag",
-    rag_agent,
-)
-
-builder.add_node(
-    "general",
-    general_agent,
-)
-
-builder.add_edge(
-    START,
-    "supervisor",
-)
+builder.add_edge(START, "supervisor")
 
 builder.add_conditional_edges(
     "supervisor",

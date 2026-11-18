@@ -1,8 +1,10 @@
+
+import json
 from typing import Literal
 
 from pydantic import BaseModel
 
-from app.ai.langchain_llm import llm
+from app.ai.langchain_llm import company_tool_llm, groq_llm
 
 
 class CompanyToolChoice(BaseModel):
@@ -12,11 +14,14 @@ class CompanyToolChoice(BaseModel):
         "get_available_documents",
         "get_my_manager",
         "get_manager_employees",
+        "get_company_reporting_structure",
         "get_employee_count",
         "get_manager_count",
         "get_department_employees",
         "get_department_count",
         "get_user_by_name",
+        "get_employee_manager",
+        "get_all_company_employees",
         "none",
     ]
     name: str | None = None
@@ -25,178 +30,229 @@ class CompanyToolChoice(BaseModel):
 async def choose_company_tool(
     question: str,
     chat_history: list,
+    current_user: dict,
+    provider: str = "gemini",
 ) -> CompanyToolChoice:
 
+    recent_history = chat_history[-6:]
+    role = current_user.get("role", "Unknown")
+
+    history_text = "\n".join(
+        f"{message.type}: {message.content}"
+        for message in recent_history
+    )
+
     prompt = f"""
-You select the correct company-data tool.
+Select the correct company-data tool for the user's question.
 
-Available tools:
+TOOLS:
 
-get_my_profile:
-Returns the currently logged-in user's name, role,
-department, and designation.
+get_my_profile
+- Current user's name, role, department, designation.
 
-get_my_documents:
-Returns documents uploaded by the currently logged-in user.
+get_my_documents
+- Documents uploaded by the current user only.
 
-get_available_documents:
-Returns documents that the currently logged-in user is authorized
-to access according to their role and department.
+get_available_documents
+- Documents the current user is authorized to access.
+- Admin: all company documents.
+- Manager: documents in their department.
+- Employee: their own uploaded documents.
+- Use for document access/availability questions, including
+  whether the user can access another person's or admin's document.
+- Do not use for document content questions.
 
-Admin:
-Can access all company documents.
+get_my_manager
+- Current user's department manager.
 
-Manager:
-Can access documents belonging to their department.
+get_manager_employees
+- Returns active employees reporting directly to the current user,
+  provided the current user is a manager.
+- Does NOT support searching employees under another named manager.
+- Do not pass a manager name to this tool.
 
-Employee:
-Can access only their own uploaded documents.
+get_company_reporting_structure
+- Returns active managers and active employees assigned to those managers.
+- Intended for administrators asking about company reporting relationships.
+- Does NOT guarantee a complete list of all active company employees.
+- Do not use this tool as a general employee directory.
 
-Use this tool for questions about:
-- What documents can I access?
-- What documents are available to me?
-- Can I see a document uploaded by someone else?
-- Can I see documents uploaded by the admin?
-- Which documents can I access?
-- Who uploaded this document?
-- What documents are available to me?
+get_employee_count
+- Total active employees in the company.
 
-get_my_manager:
-Returns the manager of the currently logged-in user's department.
+get_manager_count
+- Total active managers in the company.
 
-get_manager_employees:
-Returns active employees who report directly to the
-currently logged-in manager.
+get_department_employees
+- Active employees in the current user's department.
 
-Use this for questions such as:
-"Who are my employees?"
-"Who works under me?"
-"Show my employees."
-"Which employees report to me?"
+get_department_count
+- Total active departments.
+- Count only active departments.
 
-Do not require a name when the user asks about their
-own employees.
+get_employee_manager
+- Retrieves the manager of a specific employee.
+- Admin can query any active employee in the company.
+- Manager and employee access must follow their permitted scope.
+- Requires the employee's name.
+- Use for questions such as:
+  "Who is Rizwan's manager?"
+  "Does Rizwan have a manager?"
+  "What is his manager's name?"
 
-get_employee_count:
-Returns the total number of active employees in the company.
+get_all_company_employees
+- Returns all active employees in the current company.
+- Admin only.
+- Includes employee names, departments and designations.
+- Use for company-wide employee listing questions.
+- Examples:
+  "Who are the employees?"
+  "List all employees."
+  "Who works in the company?"
 
-get_manager_count:
-Returns the total number of active managers in the company.
+get_user_by_name
+- Finds an active company user by name.
+- Returns name, role, department, and designation.
+- Use for questions about a specific person, such as:
+  "Who is John?", "Does John work here?", "Is John a user?"
+- Put only that person's name in the name field.
 
-get_department_employees:
-Returns active employees in the currently logged-in user's department.
-
-get_department_count:
-Returns the total number of active departments in the company.
-Inactive/deleted departments must not be counted.
-
-get_user_by_name:
-Finds an active company user by name.
-The user may be an admin, manager, or employee.
-Returns their name, role, department, and designation.
-
-none:
-Use when none of the company tools can answer the question.
+none
+- Use when no company tool can answer the question.
 
 RULES:
 
-1. Questions about the current user:
-   "Who am I?"
-   "What is my name?"
-   "What is my role?"
-   "What is my department?"
+1. Current user information
    → get_my_profile
 
-2. Questions about documents uploaded by the current user:
+2. Documents uploaded by the current user
    → get_my_documents
 
-3. Questions asking who the current user's manager is:
+3. Current user's manager
    → get_my_manager
 
-4. Questions asking about employees who report to a specific manager:
-   "Does John have any employees?"
-   "Who are John's employees?"
-   "Who works under John?"
-   "Who reports to John?"
-   "How many employees does John have?"
+4. Employees reporting to a manager
    → get_manager_employees
 
-   Extract the manager's name into the "name" field.
-
-5. Questions asking for the total number of active employees:
+5. Total active employees
    → get_employee_count
 
-6. Questions asking for the total number of active managers:
+6. Total active managers
    → get_manager_count
 
-7. Questions asking about employees in the current user's department:
+7. Employees in the current user's department
    → get_department_employees
 
-
-8. Questions about document availability or access permissions:
+8. Document availability or access permissions
    → get_available_documents
+   Never use get_my_documents for access-permission questions.
 
-   This includes questions such as:
-   "Can I see the document uploaded by the admin?"
-   "What documents can I access?"
-   "Which documents are available to me?"
-   "Can I access John's document?"
-
-   Do NOT use get_my_documents for these questions.
-   get_my_documents is only for listing documents uploaded
-   by the current user.
-
-9. Questions asking how many departments the company has:
+9. Number of active departments
    → get_department_count
 
-   Examples:
-   "How many departments do I have?"
-   "How many departments are there?"
-   "How many departments does the company have?"
-   "How many active departments are there?"
-   → get_department_count
+10. Specific person by name
+    → get_user_by_name
 
-10. Questions asking about a specific person by name:
-   "Who is John?"
-   "Is John a user?"
-   "Does John work here?"
-   "Tell me about John."
-   "Any user named John?"
-   "Is there anyone named John?"
-   → get_user_by_name
+11. Follow-up references to a person such as "he", "him",
+    "that person", or "she" must use the relevant person's
+    name from the conversation history and select get_user_by_name
+    when appropriate.
 
-   The person may be an admin, manager, or employee.
+12. Questions requiring uploaded document content must NOT use
+    company tools. They belong to RAG.
 
-   Extract only the person's name into the "name" field.
+13. Never invent company information.
 
-11. If the user refers to a person from the conversation history:
-   "What about him?"
-   "Does he work here?"
-   "Is that person an employee?"
+14. If no company tool applies
+    → none
 
-   Use the relevant person's name from the conversation
-   history and select get_user_by_name when appropriate.
+15. The name field is normally null.
+    Provide a name when required for get_user_by_name or
+    get_manager_employees.
 
-12. Do NOT use company tools for questions requiring uploaded
-    document content. Those questions belong to RAG.
+16. Role-specific reporting questions:
+    - Manager + "Who reports to me?" → get_manager_employees
+    - Admin + "Who reports to me?" → get_company_reporting_structure
 
-13. Do not invent company information.
+17. Employee listing vs employee count:
+    - Asking for employee names or details is not a count request.
+    - "How many employees?" → get_employee_count.
+    - Do not use get_company_reporting_structure as a
+      complete employee directory.
 
-14. If no company tool can answer the question, use "none".
+18. Role-based employee listing:
+    - Manager asking for direct reports → get_manager_employees.
+    - Manager or employee asking for employees in their
+      own department → get_department_employees.
+    - Admin asking for reporting relationships →
+      get_company_reporting_structure.
+    - If no available tool can provide the complete
+      requested employee list, select none.
 
-15. The "name" field must be provided only when the selected
-    tool is get_user_by_name. Otherwise return null.
+19. Follow-up questions:
+    - "Tell me their names", "Who are they?", "What about their
+      departments?" and similar follow-ups must be interpreted
+      using the conversation history.
+    - If the previous question requested an employee list, preserve
+      the same employee-listing intent.
+    - Do not select get_employee_count when the user asks for names.
+    - Do not select get_user_by_name unless a specific person's
+      name is known.
+
+20. Never select a tool that cannot provide the requested information.
+    Respect the current user's role and existing access restrictions.
+
+21. Employee manager lookup:
+    - Admin asking about any employee's manager
+      → get_employee_manager.
+    - Resolve pronouns using conversation history.
+    - Pass the resolved employee name in the name field.
+
+22. Company-wide employee listing:
+    - Admin asking for employee names or details
+      → get_all_company_employees.
+    - Do not use get_company_reporting_structure for general
+      employee listing questions.
+    - Use get_company_reporting_structure only for
+      reporting relationships and hierarchy.
+
+CURRENT USER ROLE:
+{role}
 
 CONVERSATION HISTORY:
-{chat_history}
+{history_text}
 
 CURRENT QUESTION:
 {question}
 
-Return the appropriate tool and, when required, the person's name.
+Return only the appropriate structured tool choice.
 """
 
-    structured_llm = llm.with_structured_output(
+    if provider == "groq":
+
+        groq_json_llm = groq_llm.bind(
+            response_format={"type": "json_object"}
+        )
+
+        groq_prompt = prompt + """
+
+Return ONLY valid JSON in this format:
+{
+    "tool": "none",
+    "name": null
+}
+
+The tool must be one of the tools listed in the prompt.
+Do not call tools. Do not include markdown.
+"""
+
+        response = await groq_json_llm.ainvoke(groq_prompt)
+
+        return CompanyToolChoice.model_validate(
+            json.loads(response.content)
+        )
+
+    structured_llm = company_tool_llm.with_structured_output(
         CompanyToolChoice
     )
 

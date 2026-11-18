@@ -165,59 +165,29 @@ async def get_user(
 # =========================================================
 
 async def build_user_response(user):
-    department = None
-    designation = None
-
-    if user.get("department_id"):
-        department = await department_collection.find_one(
-            {
-                "_id": user["department_id"]
-            }
-        )
-
-    if user.get("designation_id"):
-        designation = await designation_collection.find_one(
-            {
-                "_id": user["designation_id"]
-            }
-        )
-
     return {
         "id": str(user["_id"]),
         "company_id": str(user["company_id"]),
         "name": user["name"],
         "email": user["email"],
         "role": user["role"],
-
         "department_id": (
             str(user["department_id"])
             if user.get("department_id")
             else ""
         ),
-
         "designation_id": (
             str(user["designation_id"])
             if user.get("designation_id")
             else ""
         ),
         "manager_id": (
-           str(user["manager_id"])
-           if user.get("manager_id")
-           else None
+            str(user["manager_id"])
+            if user.get("manager_id")
+            else None
         ),
-
-        "department": (
-            department["name"]
-            if department
-            else ""
-        ),
-
-        "designation": (
-            designation["name"]
-            if designation
-            else ""
-        ),
-
+        "department": user.get("department_name") or "",
+        "designation": user.get("designation_name") or "",
         "is_active": user["is_active"],
         "created_at": user["created_at"],
     }
@@ -352,51 +322,66 @@ async def get_company_user_stats(
             "employees": 0,
         }
 
-    total_users = (
-        await user_collection.count_documents(
+    result = await user_collection.aggregate(
+        [
             {
-                "company_id":
-                    company_object_id
-            }
-        )
-    )
+                "$match": {
+                    "company_id": company_object_id
+                }
+            },
+            {
+                "$group": {
+                    "_id": None,
+                    "total_users": {"$sum": 1},
+                    "administrators": {
+                        "$sum": {
+                            "$cond": [
+                                {"$eq": ["$role", "admin"]},
+                                1,
+                                0,
+                            ]
+                        }
+                    },
+                    "managers": {
+                        "$sum": {
+                            "$cond": [
+                                {"$eq": ["$role", "manager"]},
+                                1,
+                                0,
+                            ]
+                        }
+                    },
+                    "employees": {
+                        "$sum": {
+                            "$cond": [
+                                {"$eq": ["$role", "employee"]},
+                                1,
+                                0,
+                            ]
+                        }
+                    },
+                }
+            },
+        ]
+    ).to_list(length=1)
 
-    administrators = (
-        await user_collection.count_documents(
-            {
-                "company_id":
-                    company_object_id,
-                "role": "admin",
-            }
-        )
-    )
+    if not result:
+        return {
+            "total_users": 0,
+            "administrators": 0,
+            "managers": 0,
+            "employees": 0,
+        }
 
-    managers = (
-        await user_collection.count_documents(
-            {
-                "company_id":
-                    company_object_id,
-                "role": "manager",
-            }
-        )
-    )
-
-    employees = (
-        await user_collection.count_documents(
-            {
-                "company_id":
-                    company_object_id,
-                "role": "employee",
-            }
-        )
-    )
+    stats = result[0]
 
     return {
-        "total_users": total_users,
-        "administrators": administrators,
-        "managers": managers,
-        "employees": employees,
+        "total_users": stats["total_users"],
+        "administrators": stats["administrators"],
+        "managers": stats["managers"],
+        "employees": stats["employees"],
     }
+
 
 
 # =========================================================

@@ -101,71 +101,75 @@ async def get_available_documents(
             "admin_document_count": 0,
         }
 
-    documents = await document_collection.find(
-        query,
+    pipeline = [
         {
-            "original_filename": 1,
-            "document_type": 1,
-            "uploaded_by": 1,
-            "department_id": 1,
-            "status": 1,
+            "$match": query
         },
-    ).sort(
-        "original_filename", 1
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "uploaded_by",
+                "foreignField": "_id",
+                "as": "uploader",
+            }
+        },
+        {
+            "$unwind": {
+                "path": "$uploader",
+                "preserveNullAndEmptyArrays": True,
+            }
+        },
+        {
+            "$project": {
+                "original_filename": 1,
+                "document_type": 1,
+                "status": 1,
+                "uploaded_by": 1,
+                "uploader_name": "$uploader.name",
+                "uploader_role": "$uploader.role",
+                "uploader_department": "$uploader.department_name",
+            }
+        },
+        {
+            "$sort": {
+                "original_filename": 1
+            }
+        },
+    ]
+
+    documents = await document_collection.aggregate(
+        pipeline
     ).to_list(length=None)
 
-    results = []
-
-    for document in documents:
-        uploader = None
-
-        if document.get("uploaded_by"):
-            uploader = await user_collection.find_one(
-                {
-                    "_id": document["uploaded_by"],
-                    "company_id": company_id,
-                },
-                {
-                    "name": 1,
-                    "role": 1,
-                    "department_name": 1,
-                },
-            )
-
-        results.append(
-            {
-                "name": document.get(
-                    "original_filename",
-                    "Unknown document",
-                ),
-                "type": document.get(
-                    "document_type",
-                    "Unknown",
-                ),
-                "uploaded_by": (
-                    uploader.get("name", "Unknown")
-                    if uploader
-                    else "Unknown"
-                ),
-                "uploader_role": (
-                    uploader.get("role", "Unknown")
-                    if uploader
-                    else "Unknown"
-                ),
-                "department": (
-                    uploader.get(
-                        "department_name",
-                        "Unknown",
-                    )
-                    if uploader
-                    else "Unknown"
-                ),
-                "status": document.get(
-                    "status",
-                    "Unknown",
-                ),
-            }
-        )
+    results = [
+        {
+            "name": document.get(
+                "original_filename",
+                "Unknown",
+            ),
+            "type": document.get(
+                "document_type",
+                "Unknown",
+            ),
+            "uploaded_by": document.get(
+                "uploader_name",
+                "Unknown",
+            ),
+            "uploader_role": document.get(
+                "uploader_role",
+                "Unknown",
+            ),
+            "department": document.get(
+                "uploader_department",
+                "Unknown",
+            ),
+            "status": document.get(
+                "status",
+                "Unknown",
+            ),
+        }
+        for document in documents
+    ]
 
     admin_documents = [
         document
@@ -182,6 +186,12 @@ async def get_available_documents(
             admin_documents
         ),
     }
+
+
+
+
+
+
 
 
        
@@ -279,6 +289,97 @@ async def get_manager_employees(
     ]
    
 
+async def get_company_reporting_structure(
+    current_user: dict,
+) -> list[dict]:
+    company_id = ObjectId(
+        current_user["company_id"]
+    )
+
+    pipeline = [
+        {
+            "$match": {
+                "company_id": company_id,
+                "role": "manager",
+                "is_active": True,
+            }
+        },
+        {
+            "$lookup": {
+                "from": "users",
+                "let": {
+                    "manager_id": "$_id"
+                },
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$and": [
+                                    {
+                                        "$eq": [
+                                            "$manager_id",
+                                            "$$manager_id",
+                                        ]
+                                    },
+                                    {
+                                        "$eq": [
+                                            "$company_id",
+                                            company_id,
+                                        ]
+                                    },
+                                    {
+                                        "$eq": [
+                                            "$role",
+                                            "employee",
+                                        ]
+                                    },
+                                    {
+                                        "$eq": [
+                                            "$is_active",
+                                            True,
+                                        ]
+                                    },
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$project": {
+                            "_id": 0,
+                            "name": 1,
+                            "department_name": 1,
+                            "designation_name": 1,
+                        }
+                    },
+                    {
+                        "$sort": {
+                            "name": 1
+                        }
+                    },
+                ],
+                "as": "employees",
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "manager": "$name",
+                "department": "$department_name",
+                "employees": 1,
+            }
+        },
+        {
+            "$sort": {
+                "manager": 1
+            }
+        },
+    ]
+
+    managers = await user_collection.aggregate(
+        pipeline
+    ).to_list(length=None)
+
+    return managers
 
 async def get_employee_count(
     current_user: dict,
@@ -458,3 +559,39 @@ async def get_user_by_name(
     ]
 
 
+async def get_all_company_employees(
+    current_user: dict,
+) -> list[dict]:
+
+    if current_user.get("role") != "admin":
+        return []
+
+    employees = await user_collection.find(
+        {
+            "company_id": ObjectId(
+                current_user["company_id"]
+            ),
+            "role": "employee",
+            "is_active": True,
+        },
+        {
+            "name": 1,
+            "department_name": 1,
+            "designation_name": 1,
+        },
+    ).sort(
+        "name", 1
+    ).to_list(length=None)
+
+    return [
+        {
+            "name": employee.get("name", "Unknown"),
+            "department": employee.get(
+                "department_name", "Unknown"
+            ),
+            "designation": employee.get(
+                "designation_name", "Unknown"
+            ),
+        }
+        for employee in employees
+    ]

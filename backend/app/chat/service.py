@@ -1,3 +1,4 @@
+
 from datetime import datetime
 
 from bson import ObjectId
@@ -6,7 +7,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 from google.genai.errors import ClientError
 
 from app.ai.graph.graph import graph
-from app.ai.langchain_llm import llm
+from app.ai.langchain_llm import llm, groq_llm
 from app.database.mongodb import (
     chat_collection,
     message_collection,
@@ -111,7 +112,9 @@ async def verify_chat_owner(
 
 async def generate_chat_title(
     first_message: str,
+    provider: str = "gemini",
 ) -> str:
+
     prompt = f"""
 Generate a short and meaningful chat title (maximum 6 words)
 based on the user's first message.
@@ -124,9 +127,28 @@ User message:
 {first_message}
 """
 
-    response = await llm.ainvoke(prompt)
+    selected_llm = groq_llm if provider == "groq" else llm
 
-    return response.content.strip()
+    try:
+        response = await selected_llm.ainvoke(prompt)
+
+        title = response.content.strip()
+
+        if title:
+            return title
+
+    except Exception as error:
+        print(
+            f"Chat title generation failed using {provider}: {error!r}",
+            flush=True,
+        )
+
+    # Local fallback: no AI request required.
+    fallback_title = " ".join(
+        first_message.strip().split()[:6]
+    )
+
+    return fallback_title[:60] or "New Chat"
 
 
 # =========================================================
@@ -240,21 +262,27 @@ async def send_message(
         chat_id
     )
 
+    safe_user = {
+        key: value
+        for key, value in current_user.items()
+        if key != "password_hash"
+    }
+
     # -----------------------------------------------------
     # AI GRAPH
     # -----------------------------------------------------
 
     response = await graph.ainvoke(
-      {
-        "current_user": current_user,
-        "input": content,
-        "chat_history": history,
-        "context": [],
-        "company_context": "",
-        "answer": "",
-        "route": "",
-        "conversation_context": {},
-      }
+        {
+            "current_user": current_user,
+            "input": content,
+            "chat_history": history,
+            "context": [],
+            "company_context": "",
+            "answer": "",
+            "route": "",
+            "conversation_context": {},
+        }
     )
 
     sources = extract_sources(
@@ -267,7 +295,8 @@ async def send_message(
 
     if user_message_count == 1:
         title = await generate_chat_title(
-            content
+            content,
+            provider=response.get("provider", "gemini"),
         )
 
         await chat_collection.update_one(
@@ -304,12 +333,6 @@ async def send_message(
 # STREAM MESSAGE
 # =========================================================
 
-
-
-# =========================================================
-# STREAM MESSAGE
-# =========================================================
-
 async def stream_message(
     chat_id: str,
     company_id: str,
@@ -332,14 +355,21 @@ async def stream_message(
 
     history = await get_chat_history(chat_id)
 
+    safe_user = {
+        key: value
+        for key, value in current_user.items()
+        if key != "password_hash"
+    }
+
     response_text = ""
     company_answer = None
     ai_error = False
+    selected_provider = "gemini"
 
     try:
         async for event in graph.astream_events(
             {
-                "current_user": current_user,
+                "current_user": safe_user,
                 "input": content,
                 "chat_history": history,
                 "context": [],
@@ -351,9 +381,36 @@ async def stream_message(
             version="v2",
         ):
             event_name = event["event"]
+
             node = event.get("metadata", {}).get(
                 "langgraph_node"
             )
+
+            # -------------------------------------------------
+            # CAPTURE PROVIDER SELECTED BY SUPERVISOR
+            # -------------------------------------------------
+
+            if (
+                event_name == "on_chain_end"
+                and node == "supervisor"
+            ):
+                output = event["data"].get("output")
+
+                if isinstance(output, dict):
+                    selected_provider = output.get(
+                        "provider",
+                        "gemini",
+                    )
+
+                    print(
+                        "CHAT TITLE PROVIDER:",
+                        selected_provider,
+                        flush=True,
+                    )
+
+            # -------------------------------------------------
+            # STREAM AI RESPONSE
+            # -------------------------------------------------
 
             if (
                 event_name == "on_chat_model_stream"
@@ -362,11 +419,22 @@ async def stream_message(
                     "general",
                 }
             ):
+                tags = event.get("tags", [])
+
+                # Do not stream the internal retrieval
+                # evaluator response to the user.
+                if "retrieval_evaluator" in tags:
+                    continue
+
                 chunk = event["data"]["chunk"]
 
                 if chunk.content:
                     response_text += chunk.content
                     yield chunk.content
+
+            # -------------------------------------------------
+            # COMPANY AGENT RESPONSE
+            # -------------------------------------------------
 
             elif (
                 event_name == "on_chain_end"
@@ -382,24 +450,38 @@ async def stream_message(
 
     except ClientError as error:
 
-        if error.code == 429:
-            ai_error = True
+        print(
+            f"Gemini API Error | Code: {error.code} | Details: {error!r}",
+            flush=True
+        )
 
+        ai_error = True
+
+        if error.code == 429:
             error_message = (
-                "The AI service is temporarily unavailable "
-                "because the usage limit has been reached. "
+                "The AI service has reached its request or usage limit. "
                 "Please try again later."
             )
 
-            yield error_message
+        elif error.code == 503:
+            error_message = (
+                "The AI service is temporarily overloaded. "
+                "Please try again later."
+            )
 
         else:
-            raise
+            error_message = (
+                "The AI service encountered an error. "
+                "Please try again later."
+            )
+
+        yield error_message
 
     except Exception as error:
 
         print(
-            f"AI streaming error: {error}"
+            f"AI streaming error: {error!r}",
+            flush=True
         )
 
         ai_error = True
@@ -416,8 +498,15 @@ async def stream_message(
         response_text = company_answer
         yield company_answer
 
+    # -----------------------------------------------------
+    # GENERATE CHAT TITLE
+    # -----------------------------------------------------
+
     if user_message_count == 1:
-        title = await generate_chat_title(content)
+        title = await generate_chat_title(
+            content,
+            provider=selected_provider,
+        )
 
         await chat_collection.update_one(
             {
@@ -430,6 +519,10 @@ async def stream_message(
             },
         )
 
+    # -----------------------------------------------------
+    # SAVE ASSISTANT RESPONSE
+    # -----------------------------------------------------
+
     await save_assistant_message(
         chat_id,
         response_text,
@@ -440,11 +533,9 @@ async def stream_message(
     )
 
 
-
- 
-
-   
-    
+# =========================================================
+# DELETE CHAT
+# =========================================================
 
 async def delete_chat(chat_id: str):
     await message_collection.delete_many(

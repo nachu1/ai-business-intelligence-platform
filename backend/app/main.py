@@ -1,3 +1,5 @@
+
+
 import asyncio
 
 from contextlib import asynccontextmanager
@@ -6,6 +8,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.jobs.worker import analysis_worker
+from app.database.indexes import create_indexes
+
 
 from app.documents.router import router as document_router
 from app.routers.auth import router as auth_router
@@ -23,6 +27,9 @@ from app.notifications.router import router as notification_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+
+    await create_indexes()
+
     worker_task = asyncio.create_task(
         analysis_worker()
     )

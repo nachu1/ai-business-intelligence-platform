@@ -1,0 +1,18 @@
+[
+  {
+    "user_input": "What was the revenue in May?",
+    "retrieved_contexts": [
+      "May revenue was ₹10,50,000."
+    ],
+    "response": "The revenue in May was ₹10,50,000.",
+    "reference": "The revenue in May was ₹10,50,000."
+  },
+  {
+    "user_input": "What was the net profit in June?",
+    "retrieved_contexts": [
+      "June revenue was ₹12,00,000 and net profit was ₹4,20,000."
+    ],
+    "response": "The net profit in June was ₹4,20,000.",
+    "reference": "The net profit in June was ₹4,20,000."
+  }
+]

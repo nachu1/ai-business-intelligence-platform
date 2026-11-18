@@ -1,3 +1,4 @@
+from langsmith import traceable
 from rank_bm25 import BM25Okapi
 
 
@@ -13,7 +14,7 @@ def build_bm25(documents):
 
     return BM25Okapi(corpus)
 
-
+@traceable(name="BM25 Search")
 def search_bm25(
     query: str,
     documents,

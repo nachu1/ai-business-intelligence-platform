@@ -1,0 +1,85 @@
+[
+  {
+    "user_input": "What was the revenue in March?",
+    "retrieved_contexts": [
+      "ABC Retail Pvt. Ltd.\nMonthly Sales Report - March 2026\nMetric\nValue\nTotal Revenue\n₹8,50,000\nTotal Expenses\n₹6,20,000\nNet Profit\n₹2,30,000\nTop Product\nLaptop\nLowest Stock\nWireless Mouse\nTop Region\nKochi"
+    ],
+    "response": "The total revenue in March 2026 was ₹8,50,000.",
+    "reference": "The revenue in March was ₹8,50,000."
+  },
+  {
+    "user_input": "What was the revenue in April?",
+    "retrieved_contexts": [
+      "ABC Retail Pvt. Ltd.\nMonthly Sales Report - April 2026\nMetric\nValue\nTotal Revenue\n₹9,20,000\nTotal Expenses\n₹6,50,000\nNet Profit\n₹2,70,000\nTop Product\nLaptop\nLowest Stock\nWireless Mouse\nTop Region\nKochi"
+    ],
+    "response": "The total revenue in April was ₹9,20,000.",
+    "reference": "The revenue in April was ₹9,20,000."
+  },
+  {
+    "user_input": "What was the profit in April?",
+    "retrieved_contexts": [
+      "ABC Retail Pvt. Ltd.\nMonthly Sales Report - April 2026\nMetric\nValue\nTotal Revenue\n₹9,20,000\nTotal Expenses\n₹6,50,000\nNet Profit\n₹2,70,000\nTop Product\nLaptop\nLowest Stock\nWireless Mouse\nTop Region\nKochi"
+    ],
+    "response": "The net profit in April 2026 was ₹2,70,000.",
+    "reference": "The net profit in April was ₹2,70,000."
+  },
+  {
+    "user_input": "What was the revenue in May?",
+    "retrieved_contexts": [
+      "ABC Retail Pvt. Ltd.\nMonthly Sales Report - May 2026\nMetric\nValue\nTotal Revenue\n₹10,50,000\nTotal Expenses\n₹7,10,000\nNet Profit\n₹3,40,000\nTop Product\nSmartphone\nLowest Stock\nLaptop\nTop Region\nBengaluru"
+    ],
+    "response": "The total revenue in May was ₹10,50,000.",
+    "reference": "The revenue in May was ₹10,50,000."
+  },
+  {
+    "user_input": "What was the revenue in June?",
+    "retrieved_contexts": [
+      "ABC Retail Pvt. Ltd.\nMonthly Sales Report - June 2026\nMetric\nValue\nTotal Revenue\n₹12,00,000\nTotal Expenses\n₹7,80,000\nNet Profit\n₹4,20,000\nTop Product\nTablet\nLowest Stock\nSmartphone\nTop Region\nChennai"
+    ],
+    "response": "The total revenue in June 2026 was ₹12,00,000.",
+    "reference": "The revenue in June was ₹12,00,000."
+  },
+  {
+    "user_input": "Compare March and April revenue.",
+    "retrieved_contexts": [
+      "ABC Retail Pvt. Ltd.\nMonthly Sales Report - April 2026\nMetric\nValue\nTotal Revenue\n₹9,20,000\nTotal Expenses\n₹6,50,000\nNet Profit\n₹2,70,000\nTop Product\nLaptop\nLowest Stock\nWireless Mouse\nTop Region\nKochi",
+      "ABC Retail Pvt. Ltd.\nMonthly Sales Report - March 2026\nMetric\nValue\nTotal Revenue\n₹8,50,000\nTotal Expenses\n₹6,20,000\nNet Profit\n₹2,30,000\nTop Product\nLaptop\nLowest Stock\nWireless Mouse\nTop Region\nKochi"
+    ],
+    "response": "Here's a comparison of revenue for March and April:\n\nMarch 2026 Total Revenue: ₹8,50,000\nApril 2026 Total Revenue: ₹9,20,000\n\nRevenue increased from March to April.",
+    "reference": "March revenue was ₹8,50,000 and April revenue was ₹9,20,000. April revenue was ₹70,000 higher than March."
+  },
+  {
+    "user_input": "What was the difference between revenue and net profit in March?",
+    "retrieved_contexts": [
+      "ABC Retail Pvt. Ltd.\nMonthly Sales Report - March 2026\nMetric\nValue\nTotal Revenue\n₹8,50,000\nTotal Expenses\n₹6,20,000\nNet Profit\n₹2,30,000\nTop Product\nLaptop\nLowest Stock\nWireless Mouse\nTop Region\nKochi"
+    ],
+    "response": "The difference between revenue and net profit in March 2026 was ₹6,20,000.",
+    "reference": "March revenue was ₹8,50,000 and net profit was ₹2,30,000, so the difference was ₹6,20,000."
+  },
+  {
+    "user_input": "What was the top product in May?",
+    "retrieved_contexts": [
+      "ABC Retail Pvt. Ltd.\nMonthly Sales Report - May 2026\nMetric\nValue\nTotal Revenue\n₹10,50,000\nTotal Expenses\n₹7,10,000\nNet Profit\n₹3,40,000\nTop Product\nSmartphone\nLowest Stock\nLaptop\nTop Region\nBengaluru",
+      "Revenue increased compared to the previous month. Laptop inventory is above the reorder level. Smartphone became the top product, while Bengaluru became the top region."
+    ],
+    "response": "The top product in May was Smartphone.",
+    "reference": "The top product in May was Smartphone."
+  },
+  {
+    "user_input": "Which region was the top region in June?",
+    "retrieved_contexts": [
+      "ABC Retail Pvt. Ltd.\nMonthly Sales Report - June 2026\nMetric\nValue\nTotal Revenue\n₹12,00,000\nTotal Expenses\n₹7,80,000\nNet Profit\n₹4,20,000\nTop Product\nTablet\nLowest Stock\nSmartphone\nTop Region\nChennai",
+      "stock level. Tablet became the top-selling product, while Chennai became the top-performing region."
+    ],
+    "response": "Chennai was the top region in June.",
+    "reference": "Chennai was the top region in June."
+  },
+  {
+    "user_input": "What was the net profit in June?",
+    "retrieved_contexts": [
+      "ABC Retail Pvt. Ltd.\nMonthly Sales Report - June 2026\nMetric\nValue\nTotal Revenue\n₹12,00,000\nTotal Expenses\n₹7,80,000\nNet Profit\n₹4,20,000\nTop Product\nTablet\nLowest Stock\nSmartphone\nTop Region\nChennai"
+    ],
+    "response": "The net profit in June 2026 was ₹4,20,000.",
+    "reference": "The net profit in June was ₹4,20,000."
+  }
+]
